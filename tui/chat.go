@@ -10,6 +10,7 @@ import (
 
 type ChatModel struct {
 	lastEscAt time.Time
+	isLooking bool
 	chat      []string
 	input     textinput.Model
 }
@@ -60,10 +61,15 @@ func (k chatKeyMap) FullHelp() [][]key.Binding {
 }
 
 func (m ChatModel) Init() tea.Cmd {
-	return nil
+	return textinput.Blink
 }
 
 func (m ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var (
+		inputCmd tea.Cmd
+		cmds     []tea.Cmd
+	)
+
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
 		switch {
@@ -73,9 +79,12 @@ func (m ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	}
-	return m, nil
+	m.input, inputCmd = m.input.Update(msg)
+	cmds = append(cmds, inputCmd)
+	return m, tea.Batch(cmds...)
 }
 
 func (m ChatModel) View() tea.View {
-	return tea.NewView("chat")
+	input := m.input.View()
+	return tea.NewView(input)
 }

@@ -25,33 +25,34 @@ func (m MainModel) Init() tea.Cmd {
 
 func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
-	var cmds []tea.Cmd
 
 	switch msg.(type) {
 	case SwitchView:
-		if m.State == menu {
+		switch m.State {
+		case menu:
 			m.State = chat
-		} else {
+			return m, m.Chat.Init()
+		case chat:
 			m.State = menu
+			return m, m.Menu.Init()
 		}
 	}
 
 	switch m.State {
 	case menu:
-		menuModel, menuCmd := m.Menu.Update(msg)
-		m.Menu = menuModel
-		cmd = menuCmd
+		var updatedMenu tea.Model
+		updatedMenu, cmd = m.Menu.Update(msg)
+		m.Menu = updatedMenu
 	case chat:
-		chatModel, chatCmd := m.Chat.Update(msg)
-		m.Chat = chatModel
-		cmd = chatCmd
+		var updatedChat tea.Model
+		updatedChat, cmd = m.Chat.Update(msg)
+		m.Chat = updatedChat
 	}
-	cmds = append(cmds, cmd)
-	return m, tea.Batch(cmds...)
+	return m, cmd
 }
 
 func (m MainModel) View() tea.View {
-	v := tea.NewView("loading...")
+	var v tea.View
 	switch m.State {
 	case menu:
 		v = m.Menu.View()
