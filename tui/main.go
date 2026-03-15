@@ -11,6 +11,8 @@ const (
 	chat
 )
 
+type SwitchView struct{}
+
 type MainModel struct {
 	State focusedModel
 	Menu  tea.Model
@@ -24,6 +26,16 @@ func (m MainModel) Init() tea.Cmd {
 func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	var cmds []tea.Cmd
+
+	switch msg.(type) {
+	case SwitchView:
+		if m.State == menu {
+			m.State = chat
+		} else {
+			m.State = menu
+		}
+	}
+
 	switch m.State {
 	case menu:
 		menuModel, menuCmd := m.Menu.Update(msg)
